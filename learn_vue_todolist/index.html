@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <title>todolist</title>
+</head>
+
+<body>
+  <div id="app">
+    <!--<el-container>:外层容器，参考文档：https://element.eleme.cn/#/zh-CN/component/container-->
+    <el-container>
+      <el-header height="20">
+        <h1>ToDoList</h1>
+      </el-header>
+      <el-main>
+        <!--定义任务输入框·-->
+        <el-input placeholder="回车添加待办事项" class="todoinput" @keyup.enter.native="add" v-model="newtodo.content">
+        </el-input>
+        <p>进行中：{{ todolist.length }} 已完成：{{ donenum }}</p>
+
+        <!--element-ui布局参考文档：https://element.eleme.cn/#/zh-CN/component/layout-->
+        <el-row v-for="(item, index) in todolist" class="list-row">
+          <!--定义单个任务显示文本框-->
+          <el-col :xs="20" :sm="22" :md="22" :lg="22" :xl="22">
+            <input type="text" v-model="item.content" class="ipcont" :class="{done: todolist[index].done}">
+          </el-col>
+          <!--定义任务删除按钮-->
+          <el-col :xs="2" :sm="1" :md="1" :lg="1" :xl="1" class="close">
+            <i class="el-icon-close" @click="del(index)"></i>
+          </el-col>
+        </el-row>
+
+      </el-main>
+    </el-container>
+  </div>
+
+  <script>
+    var STORAGE_KEY = 'todolist'
+
+    //获取指定STORAGE_KEY本地存储的值
+    function fetch() {
+      return JSON.parse(window.localStorage.getItem(STORAGE_KEY)
+        || '[]')
+    }
+    //将JSON.stringify(items)获取的值存储到STORAGE_KEY字段
+    function save(items) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    }
+
+    var doit = new Vue({
+      el: '#app',
+      data: {
+        newtodo: {
+          content: '',
+          done: false
+        },
+        todolist: fetch()
+      },
+      //methods是一种交互方法，将用户交互动作写在methods中，
+      //方法计算后垃圾回收机制会将变量回收，无缓存机制
+      methods: {
+        add: function () {
+          if (this.newtodo.content) {
+            this.todolist.push(this.newtodo)
+            this.newtodo = { content: '', done: false }
+          }
+        },
+        del: function (index) {
+          this.todolist.splice(index, 1)
+        }
+      },
+      //computed数据变换时mvc中的module到view的数据转化映射.检测到data数据变化自动触发
+      //数据占用内存不会被垃圾回收掉，具有缓存机制，适合复杂计算场景
+      computed: {
+        donenum: function () {
+          return this.todolist.filter(function (val) { return val.done }).length
+        }
+      },
+      //监视todolist的变化
+      watch: {
+        todolist: {
+          handler(items) {
+            save(items)
+          },
+          deep: true
+        }
+      }
+    })
+  </script>
+
+  <style>
+    #app {
+      font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+      color: #756C83;
+    }
+
+    .el-header {
+      text-align: center;
+    }
+
+    .todoinput {
+      margin-bottom: 40px;
+    }
+
+    .list-row {
+      height: 40px;
+      background-color: #fbfbfb;
+      margin-bottom: 5px;
+    }
+
+    .check {
+      text-align: center;
+      line-height: 40px;
+    }
+
+    .red {
+      border-left: #ef5f65 2px solid;
+    }
+
+    .green {
+      border-left: #B9E1DC 2px solid;
+    }
+
+    .ipcont {
+      width: 90%;
+      margin-top: 8px;
+      border: 0;
+      line-height: 24px;
+      background-color: transparent;
+      font-size: 16px;
+      color: #756C83;
+    }
+
+    .close {
+      text-align: center;
+      line-height: 40px;
+    }
+
+    .el-icon-close {
+      cursor: pointer;
+    }
+
+    .el-icon-close:hover {
+      color: #ef5f65;
+    }
+
+    .done {
+      text-decoration: line-through;
+    }
+  </style>
+</body>
+
+</html>
